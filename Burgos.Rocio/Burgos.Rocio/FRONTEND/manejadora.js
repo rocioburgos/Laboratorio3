@@ -6,52 +6,59 @@ var PrimerParcial;
         function Manejadora() {
         }
         Manejadora.AgregarTelevisor = function () {
-            var opcion = document.getElementById("btn-agregar").value;
-            var codigo = parseInt(document.getElementById("codigo").value);
-            var marca = document.getElementById("marca").value;
-            var precio = parseInt(document.getElementById("precio").value);
-            var tipo = document.getElementById("tipo").value;
-            var pais = document.getElementById("pais").value;
-            var foto = document.getElementById("foto");
-            var unTelevisor = new Entidades.Televisor(codigo, marca, precio, tipo, pais, foto.files[0].name); //(codigo,nombre,precio,talle,color,retJSON.ruta);
-            var xhttp = new XMLHttpRequest();
-            xhttp.open("POST", "BACKEND/administrar.php", true);
-            xhttp.setRequestHeader("enctype", "multipart/form-data");
-            PrimerParcial.Manejadora.AdministrarSpinner(true);
-            var form = new FormData();
-            form.append('foto', foto.files[0]);
-            console.log(unTelevisor.televisorToJson());
-            form.append('cadenaJson', JSON.stringify(unTelevisor.televisorToJson()));
-            if (opcion == "Agregar") {
-                form.append('caso', "agregar");
-                xhttp.send(form);
-                xhttp.onreadystatechange = function () {
-                    if (xhttp.readyState == 4 && xhttp.status == 200) {
-                        alert(xhttp.responseText);
-                        var retJSON = JSON.parse(xhttp.responseText);
-                        if (retJSON.TodoOK) {
-                            PrimerParcial.Manejadora.LimpiarForm();
-                            alert("operacion realizada");
+            if (Manejadora.AdministrarValidaciones()) {
+                var opcion = document.getElementById("btn-agregar").value;
+                var codigo = parseInt(document.getElementById("codigo").value);
+                var marca = document.getElementById("marca").value;
+                var precio = parseInt(document.getElementById("precio").value);
+                var tipo = document.getElementById("tipo").value;
+                var pais = document.getElementById("pais").value;
+                var foto = document.getElementById("foto");
+                //Manejadora.AdministrarValidaciones();
+                alert("ok");
+                var unTelevisor = new Entidades.Televisor(codigo, marca, precio, tipo, pais, foto.files[0].name); //(codigo,nombre,precio,talle,color,retJSON.ruta);
+                var xhttp_1 = new XMLHttpRequest();
+                xhttp_1.open("POST", "BACKEND/administrar.php", true);
+                xhttp_1.setRequestHeader("enctype", "multipart/form-data");
+                PrimerParcial.Manejadora.AdministrarSpinner(true);
+                var form = new FormData();
+                form.append('foto', foto.files[0]);
+                console.log(unTelevisor.televisorToJson());
+                form.append('cadenaJson', JSON.stringify(unTelevisor.televisorToJson()));
+                if (opcion == "Agregar") {
+                    form.append('caso', "agregar");
+                    xhttp_1.send(form);
+                    xhttp_1.onreadystatechange = function () {
+                        if (xhttp_1.readyState == 4 && xhttp_1.status == 200) {
+                            alert(xhttp_1.responseText);
+                            var retJSON = JSON.parse(xhttp_1.responseText);
+                            if (retJSON.TodoOK) {
+                                PrimerParcial.Manejadora.LimpiarForm();
+                                alert("operacion realizada");
+                            }
                         }
-                    }
-                };
+                    };
+                }
+                else {
+                    form.append('caso', "modificar");
+                    xhttp_1.send(form);
+                    xhttp_1.onreadystatechange = function () {
+                        if (xhttp_1.readyState == 4 && xhttp_1.status == 200) {
+                            alert(xhttp_1.responseText);
+                            var retJSON = JSON.parse(xhttp_1.responseText);
+                            if (retJSON.TodoOK) {
+                                alert("operacion realizada");
+                                PrimerParcial.Manejadora.MostrarTelevisores();
+                            }
+                        }
+                    };
+                }
+                PrimerParcial.Manejadora.AdministrarSpinner(false);
+                PrimerParcial.Manejadora.LimpiarForm();
             }
             else {
-                form.append('caso', "modificar");
-                xhttp.send(form);
-                xhttp.onreadystatechange = function () {
-                    if (xhttp.readyState == 4 && xhttp.status == 200) {
-                        alert(xhttp.responseText);
-                        var retJSON = JSON.parse(xhttp.responseText);
-                        if (retJSON.TodoOK) {
-                            alert("operacion realizada");
-                            PrimerParcial.Manejadora.MostrarTelevisores();
-                        }
-                    }
-                };
+                alert("Hay errores.");
             }
-            PrimerParcial.Manejadora.AdministrarSpinner(false);
-            PrimerParcial.Manejadora.LimpiarForm();
         };
         Manejadora.MostrarTelevisores = function () {
             var xmlhttp = new XMLHttpRequest();
@@ -243,6 +250,105 @@ var PrimerParcial;
             else {
                 document.getElementById("divSpinner").style.display = "none";
             }
+        };
+        //codigo - marca- precio-tipo - pais- foto
+        Manejadora.AdministrarValidaciones = function () {
+            var retorno = true;
+            //codigo
+            var codigo = parseInt(document.getElementById("codigo").value);
+            if (!this.ValidarCamposVacios("codigo") || !this.ValidarCodigo(codigo)) {
+                Manejadora.AdministrarSpanErrores("codigo", true);
+                retorno = false;
+            }
+            else {
+                Manejadora.AdministrarSpanErrores("codigo", false);
+            }
+            //marca
+            if (!this.ValidarCamposVacios("marca")) {
+                Manejadora.AdministrarSpanErrores("marca", true);
+                retorno = false;
+            }
+            else {
+                Manejadora.AdministrarSpanErrores("marca", false);
+            }
+            //precio
+            if (!this.ValidarCamposVacios("precio")) {
+                Manejadora.AdministrarSpanErrores("precio", true);
+                retorno = false;
+            }
+            else {
+                Manejadora.AdministrarSpanErrores("precio", false);
+            }
+            //foto
+            if (!this.ValidarCamposVacios("foto")) {
+                Manejadora.AdministrarSpanErrores("foto", true);
+                retorno = false;
+            }
+            else {
+                Manejadora.AdministrarSpanErrores("foto", false);
+            }
+            //tipo
+            var tipo = document.getElementById("tipo").value;
+            var permitidos = ["Tubo", "Plasma", "Led", "Smart", "4K", "8K"];
+            if (!this.ValidarCamposVacios("tipo") || !this.ValidarTipo(tipo, permitidos)) {
+                Manejadora.AdministrarSpanErrores("tipo", true);
+                retorno = false;
+            }
+            else {
+                Manejadora.AdministrarSpanErrores("tipo", false);
+            }
+            return retorno;
+        };
+        /*ValidarCamposVacios(string): boolean. Recibe como parámetro el valor del atributo
+        id del campo a ser validado. Retorna true si no está vacío o false caso contrario. */
+        Manejadora.ValidarCamposVacios = function (id) {
+            var valor = (document.getElementById(id).value);
+            if (valor.length > 0) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        };
+        /*ValidarTipo(string, string[]): boolean. Recibe como parámetro el valor a ser validado
+        y los valores permitidos para los tipos (Tubo, Plasma, Led, Smart, 4K, 8K). Retorna true
+        si el valor pertenece a los tipos o false caso contrario. */
+        Manejadora.ValidarTipo = function (valor, tiposPermiditos) {
+            for (var i = 0; i < tiposPermiditos.length; i++) {
+                if (tiposPermiditos[i] == valor) {
+                    return true;
+                }
+            }
+            return false;
+        };
+        /*ValidarCodigo(number): boolean. Recibe como parámetro el valor del código a ser validado y
+        retorna true si el mismo es mayor o igual a 523 y menor a 1000. False caso contrario. */
+        Manejadora.ValidarCodigo = function (valor) {
+            if (valor >= 523 && valor < 1000) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        };
+        Manejadora.AdministrarSpanErrores = function (id, mostrar) {
+            if (mostrar) {
+                document.getElementById(id).nextElementSibling.style.display = "block";
+            }
+            else {
+                document.getElementById(id).nextElementSibling.style.display = "none";
+            }
+        };
+        Manejadora.VerificarSpan = function () {
+            var boolRetorno = true;
+            var todoSpan = document.querySelectorAll("span");
+            for (var i = 0; i < todoSpan.length; i++) {
+                if (todoSpan[i].style.display == "block") {
+                    boolRetorno = false;
+                    break;
+                }
+            }
+            return boolRetorno;
         };
         return Manejadora;
     }());
